@@ -289,6 +289,52 @@ tasks:
           exit 99
         fi
 
+  reset-values-file:
+    desc: Gather and encode backend (grapi) and frontend (gruim) injections 
+          and update values.yaml
+    cmds:
+      - echo "1) Checking if values.yaml exists..."
+      - |
+        if [ -f "{{.VALUES_YAML_PATH}}" ]; then
+          echo "values.yaml found at {{.VALUES_YAML_PATH}}"
+        else
+          echo "ERROR: values.yaml not found at {{.VALUES_YAML_PATH}}"
+          exit 1
+        fi
+      - echo "2) Resetting grapi injections..."
+      - |
+        FOLDER={{.GRAPI_INJECTION_FOLDER}}
+        BASE64=$(if [[ "$OSTYPE" == "darwin"* ]]; then echo "base64"; else echo "base64 -w 0"; fi)
+        BASE="{{.BASE}}"  # Ensuring BASE is enclosed in quotes for full path reference
+        GROUPS="controllers prerelationpatches postpatches"
+        if yq -e ".${BASE}.${FOLDER}" {{.VALUES_YAML_PATH}} >/dev/null; then
+          for group_name in $(echo ${GROUPS}); do
+            echo "reset ${group_name}"
+            yq -i ".${BASE}.${FOLDER}.${group_name} = []" \
+                {{.VALUES_YAML_PATH}}
+          done
+        else
+          echo "failed to reset ${FOLDER} values..."
+          exit 99
+        fi
+ 
+      - echo "3) Resetting gruim injections..."
+      - |
+        FOLDER={{.GRUIM_INJECTION_FOLDER}}
+        BASE64=$(if [[ "$OSTYPE" == "darwin"* ]]; then echo "base64"; else echo "base64 -w 0"; fi)
+        BASE="{{.BASE}}"  # Ensuring BASE is enclosed in quotes for full path reference
+        GROUPS="custommodules"
+        if yq -e ".${BASE}.${FOLDER}" {{.VALUES_YAML_PATH}} >/dev/null; then
+          for group_name in $(echo ${GROUPS}); do
+            echo "reset ${group_name}"
+            yq -i ".${BASE}.${FOLDER}.${group_name} = []" \
+                {{.VALUES_YAML_PATH}}
+          done
+        else
+          echo "failed to reset ${FOLDER} values..."
+          exit 99
+        fi
+      
 
   version-bump:
     desc: Bump the version
