@@ -161,3 +161,11 @@ commands:
 #   enabled: false
 # localRegistry:
 #   localbuild: truede
+profiles:
+- name: bitbucket
+  activation:
+  - vars:
+      CI: true
+  patches:
+  - op: remove
+    path: images.app.buildKit
