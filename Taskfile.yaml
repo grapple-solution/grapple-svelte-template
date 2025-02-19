@@ -320,7 +320,7 @@ tasks:
         FOLDER={{.GRUIM_INJECTION_FOLDER}}
         BASE64=$(if [[ "$OSTYPE" == "darwin"* ]]; then echo "base64"; else echo "base64 -w 0"; fi)
         SED=$(if [[ "$OSTYPE" == "darwin"* ]]; then echo 'sed -i ".bak"'; else echo "sed -i"; fi)
-        FINDFILES="$(if [[ "$OSTYPE" == "msys"* ]]; then find ${FOLDER}/${cm} -name '\*.svelte' -or -name '\*.jsx'; else find ${FOLDER}/${cm} -name '*.svelte' -or -name '*.jsx'; fi)
+        FINDFILES="$(if [[ "$OSTYPE" == "msys"* ]]; then find ${FOLDER}/${cm} -name '\*.svelte' -or -name '\*.jsx'; else find ${FOLDER}/${cm} -name '*.svelte' -or -name '*.jsx'; fi)"
         BASE="{{.BASE}}"  # Ensuring BASE is enclosed in quotes for full path reference
         cm="custommodules"
         if yq -e ".${BASE}.${FOLDER}" {{.VALUES_YAML_PATH}} >/dev/null; then
