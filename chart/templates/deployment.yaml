@@ -76,10 +76,21 @@ spec:
             - name: REMOTE_ENTRY_URL
               valueFrom:
                 configMapKeyRef:
-                  name: "{{ .Release.Namespace }}-{{ .Release.Name }}-gruim-muim"
+                  name: "{{ .Release.Namespace }}-{{ $.Release.Namespace }}-{{ .Release.Name }}-gruim-muim"
                   key: remoteentry
           {{- if .Values.env }}
             {{- toYaml .Values.env | nindent 12 }}
+          {{- end }}
+          {{- range .Values.env }}
+            {{- if eq .name "DEV" }}
+              {{- if not .value }}
+            - name: SVELTE_APP_REMOTE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: "{{ .Release.Namespace }}-{{ $.Release.Namespace }}-{{ .Release.Name }}-gruim-muim"
+                  key: remoteentry
+              {{- end }}
+            {{- end }}
           {{- end }}
           ports:
             - name: http
