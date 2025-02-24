@@ -6,10 +6,14 @@
 env: {}
 # configuration for grapple ApplicationSet (gras)
 gras-deploy:
+  enabled: false
+gras:
   enabled: true
   gras: {}
   grapi:
     # beimagetag: "v0.130"
+    beimage: grpl/grapi
+    beimagetag: 0.2.9
     discoveredrepos: true
     ingress: true
     ssl: true
@@ -59,39 +63,39 @@ gras-deploy:
           dataSource: classicmodelsid
           disableCamelCase: false
           schema: classicmodelsid
-    models:
-      - name: "clients"
-        spec:
-          name: clients
-          base: Entity
-          properties:
-            id:
-              type: number
-              id: true
-              required: true
-              generated: true
-            customerName:
-              type: string
-            customerLastname:
-              type: string
-            contactFirstName:
-              type: string
-            phone:
-              type: string
-            addressLine1:
-              type: string
-            addressLine2:
-              type: string
-            city:
-              type: string
-            state:
-              type: string
-            postalCode:
-              type: string
-            country:
-              type: string
-            creditLimit:
-              type: number
+    # models:
+    #   - name: "clients"
+    #     spec:
+    #       name: clients
+    #       base: Entity
+    #       properties:
+    #         id:
+    #           type: number
+    #           id: true
+    #           required: true
+    #           generated: true
+    #         customerName:
+    #           type: string
+    #         customerLastname:
+    #           type: string
+    #         contactFirstName:
+    #           type: string
+    #         phone:
+    #           type: string
+    #         addressLine1:
+    #           type: string
+    #         addressLine2:
+    #           type: string
+    #         city:
+    #           type: string
+    #         state:
+    #           type: string
+    #         postalCode:
+    #           type: string
+    #         country:
+    #           type: string
+    #         creditLimit:
+    #           type: number
     repositories:
       - name: classicmodelsid
         spec:
@@ -121,8 +125,12 @@ gras-deploy:
           datasource: "classicmodelsid"
     controllers: []
     postpatches: []
+    injections: []
+    prerelationpatches: []
   gruim:
     # uiimagetag: "0.1.38"
+    uiimage: grpl/gruim
+    uiimagetag: 0.2.9
     ssl: true
     sslissuer: letsencrypt-grapple-demo
     style: '{"colors":{"primary":{"DEFAULT":"#34344A","fg":"#fff"},"accent":{"DEFAULT":"#CC5A71","fg":"#fff"}}}'

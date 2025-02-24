@@ -3,7 +3,7 @@ env:
   value: "true"
 
 
-gras-deploy: 
+gras:
   # gras: 
   #   ssl: false
   grapi:

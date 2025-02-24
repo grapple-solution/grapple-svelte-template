@@ -11,7 +11,7 @@ npm-debug.log
 .dockerignore
 Dockerfile
 Dockerfile.test
-chart
+chart/**
 README.md
 tags.json
 target
@@ -19,4 +19,8 @@ skaffold.yaml
 docker-compose.yaml
 devspace.yaml
 *.tgz
+
 Taskfile.yaml
+bitbucket-pipelines.yml
+**/grapi/**
+**/gruim/**
