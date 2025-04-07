@@ -182,7 +182,7 @@ tasks:
         FINDFILES=$(if [[ "$OSTYPE" == "msys"* ]]; then find ${FOLDER} -name '\*.sh' -or -name '\*.bash'; else find ${FOLDER} -name '*.sh' -or -name '*.bash'; fi)
         BASE="{{.BASE}}"  # Ensuring BASE is enclosed in quotes for full path reference
         if yq -e ".${BASE}.${FOLDER}" {{.VALUES_YAML_PATH}} >/dev/null; then
-          for file_path in $(echo  "${FINDFILES}"); do
+          for file_path in $(echo "${FINDFILES}"); do
             group_name=$(echo ${file_path} | sed "s,${FOLDER}/,,g" | \
               cut -d/ -f1)
             file_name=$(echo ${file_path} | sed "s,${FOLDER}/,,g" | \
