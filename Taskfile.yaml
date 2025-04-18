@@ -227,7 +227,7 @@ tasks:
         FOLDER={{.GRAPI_INJECTION_FOLDER}}
         BASE64=$(if [[ "$OSTYPE" == "darwin"* ]]; then echo "base64"; else echo "base64 -w 0"; fi)
         BASE="{{.BASE}}"  # Ensuring BASE is enclosed in quotes for full path reference
-        GROUPS="injections controllers prerelationpatches postpatches"
+        GROUPS="injections controllers services prepatches prerelationpatches postpatches"
         if yq -e ".${BASE}.${FOLDER}" {{.VALUES_YAML_PATH}} >/dev/null; then
           for group_name in $(echo ${GROUPS}); do
             echo "reset ${group_name}"
