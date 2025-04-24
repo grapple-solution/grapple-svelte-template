@@ -230,9 +230,11 @@ tasks:
         GROUPS="injections controllers prerelationpatches postpatches prediscoverypatches prepatches fuzzysearch models openapis repositories restcruds serviceproviders services cacheconfigs datasources relations"
         if yq -e ".${BASE}.${FOLDER}" {{.VALUES_YAML_PATH}} >/dev/null; then
           for group_name in $(echo ${GROUPS}); do
-            echo "reset ${group_name}"
-            yq -i ".${BASE}.${FOLDER}.${group_name} = []" \
-                {{.VALUES_YAML_PATH}}
+            if yq -e ".${BASE}.${FOLDER}.${group_name}[] | has(\"content\")" {{.VALUES_YAML_PATH}} > /dev/null 2>&1; then
+              echo "reset ${group_name}"
+              yq -i ".${BASE}.${FOLDER}.${group_name} = []" \
+                  {{.VALUES_YAML_PATH}}
+            fi
           done
         else
           echo "failed to reset ${FOLDER} values..."
