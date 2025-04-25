@@ -151,6 +151,8 @@ dev:
         value: "injections"
       - name: CustomControllerDirs
         value: '{"controllerDirs": "injections"}'
+      - name: CustomServiceDirs
+        value: '{"serviceDirs": "serviceproviders"}'
     # TODO: path to the controller directory
     sync:
       # - path: ./grapi/controllers/:/home/node/app/src/controllers/
