@@ -1,3 +1,59 @@
+# Grapple Svelte Template – Development Environment
+
+## Overview
+
+This project provides a standard development environment based on **Grapple** and **Svelte**.
+
+# Working with Grapi and Gruim
+
+The backend uses the **grapi** structure, built on **Loopback**, to define services, controllers, and models.  
+You can explore and extend the available structures using:
+
+```bash
+k explain grapi.spec --recursive
+```
+
+Once the development environment is started with `grpl dev` and the pods are successfully created, three main portals will become available:
+
+- **OpenAPI and Swagger UI** ([http://localhost:3000](http://localhost:3000))  
+  Browse and test your API endpoints using Swagger.
+
+- **Admin Interface (Gruim Part)** ([http://localhost:8000](http://localhost:8000))  
+  Manage and configure your data through the admin UI.  
+  Create custom components under the `custommodules` directory.  
+  After adding components, rebuild Gruim with:
+
+  ```bash
+  grpl gruim rebuild
+  ```
+
+- **Client Interface** ([http://localhost:4000](http://localhost:4000))  
+  Develop and manage your **Svelte** frontend components.  
+  You can import components from `custommodels`, or define your own inside the `src` directory.
+
+## Starting the Development Environment
+
+1. **Create your development namespace**:
+
+```bash
+grpl dev ns <namespace>
+```
+
+2. **Start the application**:
+
+```bash
+grpl dev
+```
+
+---
+
+# Additional Resources
+
+- **Grapple Documentation**:  
+  [Documentation](https://grapple-solutions.com/documentation/)
+
+---
+
 # grapple-template
 
 
