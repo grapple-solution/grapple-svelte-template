@@ -1,7 +1,7 @@
 if [[ -z "${SVELTE_APP_REMOTE_URL}" ]] && [[ "${REMOTE_ENTRY_URL}" != "" ]]; then
     export SVELTE_APP_REMOTE_URL=$(echo ${REMOTE_ENTRY_URL} | sed "s,/remoteEntry.js,,g")
 fi
-
+export SVELTE_APP_REMOTE_URL=$(echo ${SVELTE_APP_REMOTE_URL} | sed "s,/remoteEntry.js,,g")
 if [[ -z "${CONTAINER_NAME}" ]]; then
     export CONTAINER_NAME=$(curl -s -k $SVELTE_APP_REMOTE_URL/dashboard.json | jq -r '.name')
     echo "CONTAINER_NAME: ${CONTAINER_NAME}"
