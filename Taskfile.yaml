@@ -295,7 +295,7 @@ tasks:
               group_name="controllers"
               injection_name=$(echo ${injection_name} | sed "s,.controller,,g")
             elif [ "${group_name}" = "serviceproviders" ]; then 
-              group_name="services"
+              group_name="serviceproviders"
               injection_name=$(echo ${injection_name} | sed "s,.service,,g")
             fi
             base64_content=$(cat ${file_path} | tr -d '\r' | ${BASE64})  # Base64 on single line
