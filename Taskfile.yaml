@@ -273,6 +273,7 @@ tasks:
         fi
       - echo "2) Processing grapi injections..."
       - |
+        set -o noglob
         FOLDER={{.GRAPI_INJECTION_FOLDER}}
         BASE64=$(if [[ "$OSTYPE" == "darwin"* ]]; then echo "base64"; else echo "base64 -w 0"; fi)
         SED=$(if [[ "$OSTYPE" == "darwin"* ]]; then echo 'sed -i ".bak"'; else echo "sed -i"; fi)
@@ -313,8 +314,8 @@ tasks:
           rm ${base64_content_file}
         else
           echo "failed to add ${FOLDER} values..."
-          exit 99
         fi
+        set +o noglob
 
       - echo "3) Processing gruim injections..."
       - |
@@ -354,6 +355,7 @@ tasks:
           echo "failed to add ${FOLDER} values..."
           exit 99
         fi
+        set +o noglob
 
 
   version-bump:
@@ -445,8 +447,12 @@ tasks:
         if [ -f ${VALUES_STAGE} ]; then
 
           # patch data container:
+          if [ "$(yq '.gras.grapi.initContainers[0] | has("spec")' ${VALUES_STAGE})" = "true" ]; then
           yq e -i '.gras.grapi.initContainers[0].spec.image = "grpl/{{.APP_NAME}}-{{.STAGE}}-data:{{.TAG}}"' ${VALUES_STAGE} || true
+          fi
+          if [ "$(yq '.gras.grapi.initContainers[1] | has("spec")' ${VALUES_STAGE})" = "true" ]; then
           yq e -i '.gras.grapi.initContainers[1].spec.image = "grpl/{{.APP_NAME}}-{{.STAGE}}-data:{{.TAG}}"' ${VALUES_STAGE} || true
+          fi
 
           VALUES_FILE_COMMAND=" --values ${VALUES_STAGE} "
           echo "VALUES_FILE_STAGE: ${VALUES_FILE_STAGE}"
