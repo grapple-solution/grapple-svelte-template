@@ -96,11 +96,11 @@ gras:
     #           type: string
     #         creditLimit:
     #           type: number
-    repositories:
-      - name: classicmodelsid
-        spec:
-          datasource: classicmodelsid
-          model: clients
+    # repositories:
+    #   - name: classicmodelsid
+    #     spec:
+    #       datasource: classicmodelsid
+    #       model: clients
     # relations:
     #   - name: "employees"
     #     spec:
