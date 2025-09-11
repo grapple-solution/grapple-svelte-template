@@ -228,12 +228,22 @@ tasks:
         BASE64=$(if [[ "$OSTYPE" == "darwin"* ]]; then echo "base64"; else echo "base64 -w 0"; fi)
         BASE="{{.BASE}}"  # Ensuring BASE is enclosed in quotes for full path reference
         GROUPS="injections controllers prerelationpatches postpatches prediscoverypatches prepatches fuzzysearch models openapis repositories restcruds serviceproviders services cacheconfigs datasources relations"
-        if yq -e ".${BASE}.${FOLDER}" {{.VALUES_YAML_PATH}} >/dev/null; then
-          for group_name in $(echo ${GROUPS}); do
-            if yq -e ".${BASE}.${FOLDER}.${group_name}[] | has(\"content\")" {{.VALUES_YAML_PATH}} > /dev/null 2>&1; then
-              echo "reset ${group_name}"
-              yq -i ".${BASE}.${FOLDER}.${group_name} = []" \
-                  {{.VALUES_YAML_PATH}}
+        if yq -e ".${BASE}.${FOLDER}" {{.VALUES_YAML_PATH}} >/dev/null 2>&1; then
+          for group_name in ${GROUPS}; do
+            if yq -e ".${BASE}.${FOLDER}.${group_name}[]" {{.VALUES_YAML_PATH}} >/dev/null 2>&1; then
+              has_content=$(yq eval ".${BASE}.${FOLDER}.${group_name}[] | select(has(\"content\")) | .content" {{.VALUES_YAML_PATH}} 2>/dev/null | head -n 1)
+              if [[ -n "$has_content" ]]; then
+                if [[ "$has_content" != \{* ]]; then
+                  echo "reset ${group_name}"
+                  yq -i ".${BASE}.${FOLDER}.${group_name} = []" {{.VALUES_YAML_PATH}}
+                else
+                  echo "skip ${group_name} (content looks like object)"
+                fi
+              else
+                echo "skip ${group_name} (no content found)"
+              fi
+            else
+              echo "skip ${group_name} (group missing or empty)"
             fi
           done
         else
@@ -249,9 +259,21 @@ tasks:
         GROUPS="custommodules"
         if yq -e ".${BASE}.${FOLDER}" {{.VALUES_YAML_PATH}} >/dev/null; then
           for group_name in $(echo ${GROUPS}); do
-            echo "reset ${group_name}"
-            yq -i ".${BASE}.${FOLDER}.${group_name} = []" \
-                {{.VALUES_YAML_PATH}}
+            if yq -e ".${BASE}.${FOLDER}.${group_name}[]" {{.VALUES_YAML_PATH}} >/dev/null 2>&1; then
+              has_content=$(yq eval ".${BASE}.${FOLDER}.${group_name}[] | select(has(\"content\")) | .content" {{.VALUES_YAML_PATH}} 2>/dev/null | head -n 1)
+              if [[ -n "$has_content" ]]; then
+                if [[ "$has_content" != \{* ]]; then
+                  echo "reset ${group_name}"
+                  yq -i ".${BASE}.${FOLDER}.${group_name} = []" {{.VALUES_YAML_PATH}}
+                else
+                  echo "skip ${group_name} (content looks like object)"
+                fi
+              else
+                echo "skip ${group_name} (no content found)"
+              fi
+            else
+              echo "skip ${group_name} (group missing or empty)"
+            fi
           done
         else
           echo "failed to reset ${FOLDER} values..."
@@ -350,7 +372,7 @@ tasks:
             yq -i ".${BASE}.${FOLDER}.${cm} += [load_props(\"${base64_content_file}\")]" \
               {{.VALUES_YAML_PATH}}
           done
-          rm ${base64_content_file}
+          rm ${base64_content_file} 2>/dev/null | true
         else
           echo "failed to add ${FOLDER} values..."
           exit 99
