@@ -38,6 +38,8 @@ spec:
                 configMapKeyRef:
                   name: "{{ .Release.Namespace }}-{{ $.Release.Namespace }}-{{ .Release.Name }}-gruim-muim"
                   key: remoteentry
+            - name: SVELTE_APP_GRAPPLE_STAGE
+              value: {{.Values.stage}}
           {{- if .Values.env }}
             {{- toYaml .Values.env | nindent 12 }}
           {{- end }}
