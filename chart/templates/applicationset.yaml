@@ -1,25 +1,28 @@
-{{- if .Values.gras.enabled -}}
+{{- range $idx, $gras := .Values.grases }}
+  {{- if $gras.enabled }}
 apiVersion: grsf.grpl.io/v1alpha1
 kind: GrappleApplicationSet
 metadata:
-  name: {{ $.Release.Namespace }}-{{ $.Release.Name }}
+  name: {{ printf "%s-%s-%s" $.Release.Namespace $.Release.Name $gras.name | quote }}
 spec:
   grapis:
-  - name: {{ $.Release.Namespace }}-{{ $.Release.Name }}
+  - name: {{ printf "%s-%s-%s" $.Release.Namespace $.Release.Name $gras.name | quote }}
     spec:
-      {{- if .Values.gras.gras -}}
-      {{ .Values.gras.gras | toYaml | nindent 6 }}
+      {{- if $gras.gras }}
+      {{ $gras.gras | toYaml | nindent 6 }}
       {{- end }}
-      {{- if .Values.gras.grapi -}}
-      {{ .Values.gras.grapi | toYaml | nindent 6 }}
+      {{- if $gras.grapi }}
+      {{ $gras.grapi | toYaml | nindent 6 }}
       {{- end }}
   gruims:
-  - name: {{ $.Release.Namespace }}-{{ $.Release.Name }}
+  - name: {{ printf "%s-%s-%s" $.Release.Namespace $.Release.Name $gras.name | quote }}
     spec:
-      {{- if .Values.gras.gras -}}
-      {{ .Values.gras.gras | toYaml | nindent 6 }}
+      {{- if $gras.gras }}
+      {{ $gras.gras | toYaml | nindent 6 }}
       {{- end }}
-      {{- if .Values.gras.gruim -}}
-      {{ .Values.gras.gruim | toYaml | nindent 6 }}
+      {{- if $gras.gruim }}
+      {{ $gras.gruim | toYaml | nindent 6 }}
       {{- end }}
+---
+  {{- end }}
 {{- end }}

@@ -10,14 +10,15 @@ env:
 #   value: "true"
 
 
-gras:
-  # gras: 
-  #   ssl: false
-  grapi:
-    ssl: false
-    autorestartgruim: false
-  gruim:
-    ssl: false
+grases:
+  - name: gras
+    enabled: true
+    gras: {}
+    grapi:
+      ssl: false
+      autorestartgruim: false
+    gruim:
+      ssl: false
 
 
 ingress:
