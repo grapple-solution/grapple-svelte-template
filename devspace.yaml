@@ -93,8 +93,7 @@ dev:
           - chart
           - data
           - dist
-          - grapi
-          - gruim
+          - grases
         uploadExcludeFile: .dockerignore
     # Open a terminal and use the following command to start it
     terminal:
@@ -195,7 +194,7 @@ profiles:
           CI: true
     patches:
       - op: remove
-        path: images.jcs.buildKit
+        path: images.app.buildKit
       - op: remove
         path: images.data.buildKit
 
