@@ -129,7 +129,7 @@ dev:
       - name: NODE_OPTIONS
         value: "--dns-result-order=ipv4first"
     sync:
-      - path: ./gruim/custommodules/.:/usr/src/app/src/lib/custom-components/.
+      - path: ./grases/gras/gruim/custommodules/.:/usr/src/app/src/lib/custom-components/.
         # - name: OPENAPI_URL
         #   value: "http://dev-app-grapi.grpl-cli.grapple-demo.com/openapi.json"
     # restartHelper:
@@ -156,7 +156,7 @@ dev:
     # TODO: path to the controller directory
     sync:
       # - path: ./grapi/controllers/:/home/node/app/src/controllers/
-      - path: ./grapi/injections/:/home/node/app/src/injections/
+      - path: ./grases/gras/grapi/injections/:/home/node/app/src/injections/
     # restartHelper:
     #   inject: true
     #   path: "export DEV=true && ./start.sh"
@@ -196,5 +196,17 @@ profiles:
     patches:
       - op: remove
         path: images.jcs.buildKit
+      - op: remove
+        path: images.data.buildKit
+
+  - name: remove-buildkit-on-linux
+    activation:
+      - vars:
+          DEVSPACE_LINUX: "true"
+    patches:
+      - op: remove
+        path: images.app.buildKit
+      - op: remove
+        path: images.test.buildKit
       - op: remove
         path: images.data.buildKit
