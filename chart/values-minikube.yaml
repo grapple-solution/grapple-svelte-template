@@ -24,3 +24,5 @@ ingress:
         - path: /
           pathType: ImplementationSpecific
   tls: []
+
+stage: dev
