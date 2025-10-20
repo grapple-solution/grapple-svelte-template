@@ -1,143 +1,19 @@
 env:
-- name: SVELTE_APP_REMOTE_URL
+- name: REACT_APP_REMOTE_URL
   value: "http://myapp-dev-ns99-myapp-gruim.test"
 - name: CONTAINER_NAME
   value: "myappdevns99myappgruim"
 # - name: DEV
 #   value: "true"
 
-
 grases:
-  - name: gras
-    enabled: true
-    gras: {}
+  gras: 
+    # gras: 
+    #   ssl: false
     grapi:
-      # beimagetag: "v0.130"
-      beimage: grpl/grapi
-      beimagetag: 0.2.9
-      discoveredrepos: true
-      ingress: true
-      ssl: false  # MINIKUBE-SPECIFIC: disabled for minikube
-      sslissuer: letsencrypt-grapple-demo
-      initContainers:
-        - name: test
-          spec:
-            name: init-db
-            image: mysql
-            command:
-              - bash
-              - -c
-              - sleep 5; while ! mysql -h $(host) -P $(port) -u $(username) -p$(password) -e "show databases;" 2>/dev/null; do echo -n .; sleep 2; done; if mysql -h $(host) -P $(port) -u $(username) -p$(password) -e "USE classicmodelsid; SET @tablename := (select table_name from information_schema.tables where table_type = 'BASE TABLE' and table_schema = 'classicmodelsid' limit 1); set @qry1:= concat('select * from ',@tablename,' limit 1'); prepare stmt from @qry1 ; execute stmt ;" ; then echo "database already exists..."; else curl -o /tmp/classicmodelsid.sql https://raw.githubusercontent.com/grapple-solutions/grapple-test-data/main/classicmodelsid/classicmodelsid.sql; mysql -h $(host) -P $(port) -u $(username) -p$(password) < /tmp/classicmodelsid.sql; fi
-      extraSecrets:
-        - grpl-test-cm-conn-credential
-      # volumes:
-      #   - name: data
-      #     emptyDir: {}
-      #     # persistentVolumeClaim: 
-      #     #   claimName: grapi-dbfile
-      # volumeMounts:
-      #   - name: data
-      #     mountPath: /data
-      # datasources:
-      #   - name: "db"
-      #     spec:
-      #       memory:
-      #         connector: "memory"
-      #         name: "db"
-      #         file: "/data/db.json"
-      #         localStorage: "db"
-      datasources:
-        - name: classicmodelsid
-          spec:
-            mysql:
-              database: classicmodelsid
-              host: $(host)
-              name: classicmodelsid
-              password: $(password)
-              port: $(port)
-              url: ""
-              user: $(username)
-      discoveries:
-        - name: classicmodelsid
-          spec:
-            all: true
-            dataSource: classicmodelsid
-            disableCamelCase: false
-            schema: classicmodelsid
-      # models:
-      #   - name: "clients"
-      #     spec:
-      #       name: clients
-      #       base: Entity
-      #       properties:
-      #         id:
-      #           type: number
-      #           id: true
-      #           required: true
-      #           generated: true
-      #         customerName:
-      #           type: string
-      #         customerLastname:
-      #           type: string
-      #         contactFirstName:
-      #           type: string
-      #         phone:
-      #           type: string
-      #         addressLine1:
-      #           type: string
-      #         addressLine2:
-      #           type: string
-      #         city:
-      #           type: string
-      #         state:
-      #           type: string
-      #         postalCode:
-      #           type: string
-      #         country:
-      #           type: string
-      #         creditLimit:
-      #           type: number
-      # repositories:
-      #   - name: classicmodelsid
-      #     spec:
-      #       datasource: classicmodelsid
-      #       model: clients
-      # relations:
-      #   - name: "employees"
-      #     spec:
-      #       relationName: "employees"
-      #       sourceModel: "Customers"
-      #       destinationModel: "Employees"
-      #       foreignKeyName: "employeesId"
-      #       relationType: "belongsTo"
-      #       registerInclusionResolver: true
-      relations:
-        - name: employees
-          spec:
-            destinationModel: Employees
-            foreignKeyName: employeesId
-            registerInclusionResolver: true
-            relationName: employees
-            relationType: belongsTo
-            sourceModel: Customers
-      restcruds:
-        - name: "classicmodelsid"
-          spec:
-            datasource: "classicmodelsid"
-      controllers: []
-      postpatches: []
-      injections: []
-      prerelationpatches: []
+      ssl: false
     gruim:
-      # uiimagetag: "0.1.38"
-      uiimage: grpl/gruim
-      uiimagetag: 0.2.9
-      ssl: false  # MINIKUBE-SPECIFIC: disabled for minikube
-      sslissuer: letsencrypt-grapple-demo
-      style: '{"colors":{"primary":{"DEFAULT":"#34344A","fg":"#fff"},"accent":{"DEFAULT":"#CC5A71","fg":"#fff"}}}'
-      config: ""
-      additionalpackages: ""
-      custommodules: []
+      ssl: false
 
 
 ingress:
@@ -148,3 +24,5 @@ ingress:
         - path: /
           pathType: ImplementationSpecific
   tls: []
+
+stage: dev

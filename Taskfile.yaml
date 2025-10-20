@@ -34,7 +34,6 @@ vars:
         CURRENT_VERSION=$(cat {{.CHART_FOLDER}}/{{.VERSION_FILE}})
         echo ${CURRENT_VERSION}
   STAGE: '{{.STAGE | default "prd"}}'
-  STAGE_VALUES_FILE: "chart/values-{{.STAGE}}.yaml"
   GIT_HASH:
     sh: git log -n 1 --format=%h
   RANDOM: "9999"
@@ -166,63 +165,63 @@ tasks:
 
   patch-values-file-patches-only:
     desc: Gather and encode backend (grapi) injections (patches only)
-          and update stage values.yaml
+          and update values.yaml
     cmds:
-      - echo "2) Looping over all grases/*/grapi* folders to patch grapi injections..."
-      - |
-        BASE_GRAS_FOLDER="grases"
-        BASE64=$(if [[ "$OSTYPE" == "darwin"* ]]; then echo "base64"; else echo "base64 -w 0"; fi)
-        if [ ! -d "${BASE_GRAS_FOLDER}" ]; then
-          echo "No grases folder found, skipping."
-          exit 0
-        fi
-        # Loop over all grases/*/grapi* folders
-        for grapi_dir in ${BASE_GRAS_FOLDER}/*/grapi*; do
-          [ -d "${grapi_dir}" ] || continue
-          GRAS_DIR=$(dirname "${grapi_dir}")
-          GRAS_NAME=$(basename "${GRAS_DIR}")
-          GRAPI_FOLDER="${grapi_dir}"
-          if [ ! -d "${GRAPI_FOLDER}" ]; then
-            echo "No grapi folder in ${GRAS_DIR}, skipping."
-            continue
+        - echo "2) Looping over all grases/*/grapi* folders to patch grapi injections..."
+        - |
+          BASE_GRAS_FOLDER="grases"
+          BASE64=$(if [[ "$OSTYPE" == "darwin"* ]]; then echo "base64"; else echo "base64 -w 0"; fi)
+          if [ ! -d "${BASE_GRAS_FOLDER}" ]; then
+            echo "No grases folder found, skipping."
+            exit 0
           fi
-          echo "Processing grapi injections for ${GRAS_NAME} (${GRAPI_FOLDER})..."
-          # Find .sh and .bash files in grapi folder
-          if [[ "$OSTYPE" == "msys"* ]]; then
-            FINDFILES=$(find "${GRAPI_FOLDER}" -name '*.sh' -or -name '*.bash' 2>/dev/null)
-          else
-            FINDFILES=$(find "${GRAPI_FOLDER}" -name '*.sh' -or -name '*.bash' 2>/dev/null)
-          fi
-          if [ -z "${FINDFILES}" ]; then
-            echo "No grapi injection files found in ${GRAPI_FOLDER}, skipping patching."
-            continue
-          fi
-          # Patch values-<stage>.yaml for each file
-          for file_path in ${FINDFILES}; do
-            rel_path=$(echo "${file_path}" | sed "s,${GRAPI_FOLDER}/,,g")
-            group_name=$(echo "${rel_path}" | cut -d/ -f1)
-            file_name=$(echo "${rel_path}" | cut -d/ -f2)
-            file_extension=$(echo ${file_name##*.})
-            injection_name=$(echo ${file_name} | sed \
-              "s,.${group_name}.${file_extension},,g" | sed \
-              "s,.${group_name::${#group_name}-1}.${file_extension},,g" | \
-              sed "s,.${file_extension}$,,g")
-            base64_content=$(cat ${file_path} | tr -d '\r' | ${BASE64})
-            if [ "${file_name}" = "index.ts" ]; then continue; fi
-            echo "patching: ${GRAS_NAME}/$(basename "${GRAPI_FOLDER}") - ${group_name} - ${injection_name} - ${file_name}"
-            # Remove old entry if exists
-            yq -i "del(.grases[] | select(.name == \"${GRAS_NAME}\").grapi.${group_name}[] | select(.name == \"${injection_name}\"))" "{{.STAGE_VALUES_FILE}}"
-            # If group_name is injections, patch as controllers
-            if [ "${group_name}" == "injections" ]; then 
-              group_name="controllers"
+          # Loop over all grases/*/grapi* folders
+          for grapi_dir in ${BASE_GRAS_FOLDER}/*/grapi*; do
+            [ -d "${grapi_dir}" ] || continue
+            GRAS_DIR=$(dirname "${grapi_dir}")
+            GRAS_NAME=$(basename "${GRAS_DIR}")
+            GRAPI_FOLDER="${grapi_dir}"
+            if [ ! -d "${GRAPI_FOLDER}" ]; then
+              echo "No grapi folder in ${GRAS_DIR}, skipping."
+              continue
             fi
-            yq -i ".grases[] |= (select(.name == \"${GRAS_NAME}\") | .grapi.${group_name} += [{\"name\": \"${injection_name}\", \"content\": \"${base64_content}\"}])" "{{.STAGE_VALUES_FILE}}"
+            echo "Processing grapi injections for ${GRAS_NAME} (${GRAPI_FOLDER})..."
+            # Find .sh and .bash files in grapi folder
+            if [[ "$OSTYPE" == "msys"* ]]; then
+              FINDFILES=$(find "${GRAPI_FOLDER}" -name '*.sh' -or -name '*.bash' 2>/dev/null)
+            else
+              FINDFILES=$(find "${GRAPI_FOLDER}" -name '*.sh' -or -name '*.bash' 2>/dev/null)
+            fi
+            if [ -z "${FINDFILES}" ]; then
+              echo "No grapi injection files found in ${GRAPI_FOLDER}, skipping patching."
+              continue
+            fi
+            # Patch values.yaml for each file
+            for file_path in ${FINDFILES}; do
+              rel_path=$(echo "${file_path}" | sed "s,${GRAPI_FOLDER}/,,g")
+              group_name=$(echo "${rel_path}" | cut -d/ -f1)
+              file_name=$(echo "${rel_path}" | cut -d/ -f2)
+              file_extension=$(echo ${file_name##*.})
+              injection_name=$(echo ${file_name} | sed \
+                "s,.${group_name}.${file_extension},,g" | sed \
+                "s,.${group_name::${#group_name}-1}.${file_extension},,g" | \
+                sed "s,.${file_extension}$,,g")
+              base64_content=$(cat ${file_path} | tr -d '\r' | ${BASE64})
+              if [ "${file_name}" = "index.ts" ]; then continue; fi
+              echo "patching: ${GRAS_NAME}/$(basename "${GRAPI_FOLDER}") - ${group_name} - ${injection_name} - ${file_name}"
+              # Remove old entry if exists
+              yq -i "del(.grases.${GRAS_NAME}.grapi.${group_name}[] | select(.name == \"${injection_name}\"))" "{{.VALUES_YAML_PATH}}"
+              # If group_name is injections, patch as controllers
+              if [ "${group_name}" == "injections" ]; then 
+                group_name="controllers"
+              fi
+              yq -i ".grases.${GRAS_NAME}.grapi.${group_name} += [{\"name\": \"${injection_name}\", \"content\": \"${base64_content}\"}]" "{{.VALUES_YAML_PATH}}"
+            done
           done
-        done
 
   reset-values-file:
     desc: Gather and encode backend (grapi) and frontend (gruim) injections 
-          and update stage values.yaml
+          and update values.yaml
     cmds:
       - echo "2) Looping over all grases/*/grapi* folders to reset grapi injections..."
       - |
@@ -245,12 +244,12 @@ tasks:
           echo "Resetting grapi injections for ${GRAS_NAME} (${GRAPI_FOLDER})..."
           GROUPS="injections controllers prerelationpatches postpatches prediscoverypatches prepatches fuzzysearch models openapis repositories restcruds serviceproviders services cacheconfigs datasources relations"
           for group_name in ${GROUPS}; do
-            if yq -e ".grases[] | select(.name == \"${GRAS_NAME}\").grapi.${group_name}[]" "{{.STAGE_VALUES_FILE}}" >/dev/null 2>&1; then
-              has_content=$(yq eval ".grases[] | select(.name == \"${GRAS_NAME}\").grapi.${group_name}[] | select(has(\"content\")) | .content" "{{.STAGE_VALUES_FILE}}" 2>/dev/null | head -n 1)
+            if yq -e ".grases.${GRAS_NAME}.grapi.${group_name}[]" "{{.VALUES_YAML_PATH}}" >/dev/null 2>&1; then
+              has_content=$(yq eval ".grases.${GRAS_NAME}.grapi.${group_name}[] | select(has(\"content\")) | .content" "{{.VALUES_YAML_PATH}}" 2>/dev/null | head -n 1)
               if [[ -n "$has_content" ]]; then
                 if [[ "$has_content" != \{* ]]; then
                   echo "reset ${GRAS_NAME}/grapi ${group_name}"
-                  yq -i ".grases[] |= (select(.name == \"${GRAS_NAME}\") | .grapi.${group_name} = [])" "{{.STAGE_VALUES_FILE}}"
+                  yq -i ".grases.${GRAS_NAME}.grapi.${group_name} = []" "{{.VALUES_YAML_PATH}}"
                 else
                   echo "skip ${GRAS_NAME}/grapi ${group_name} (content looks like object)"
                 fi
@@ -285,12 +284,12 @@ tasks:
           echo "Resetting gruim injections for ${GRAS_NAME} (${GRUIM_FOLDER})..."
           GROUPS="custommodules"
           for group_name in ${GROUPS}; do
-            if yq -e ".grases[] | select(.name == \"${GRAS_NAME}\").gruim.${group_name}[]" "{{.STAGE_VALUES_FILE}}" >/dev/null 2>&1; then
-              has_content=$(yq eval ".grases[] | select(.name == \"${GRAS_NAME}\").gruim.${group_name}[] | select(has(\"content\")) | .content" "{{.STAGE_VALUES_FILE}}" 2>/dev/null | head -n 1)
+            if yq -e ".grases.${GRAS_NAME}.gruim.${group_name}[]" "{{.VALUES_YAML_PATH}}" >/dev/null 2>&1; then
+              has_content=$(yq eval ".grases.${GRAS_NAME}.gruim.${group_name}[] | select(has(\"content\")) | .content" "{{.VALUES_YAML_PATH}}" 2>/dev/null | head -n 1)
               if [[ -n "$has_content" ]]; then
                 if [[ "$has_content" != \{* ]]; then
                   echo "reset ${GRAS_NAME}/gruim ${group_name}"
-                  yq -i ".grases[] |= (select(.name == \"${GRAS_NAME}\") | .gruim.${group_name} = [])" "{{.STAGE_VALUES_FILE}}"
+                  yq -i ".grases.${GRAS_NAME}.gruim.${group_name} = []" "{{.VALUES_YAML_PATH}}"
                 else
                   echo "skip ${GRAS_NAME}/gruim ${group_name} (content looks like object)"
                 fi
@@ -302,10 +301,11 @@ tasks:
             fi
           done
         done
+      
 
   patch-values-file:
     desc: Gather and encode backend (grapi) and frontend (gruim) injections 
-          and update stage values.yaml
+          and update values.yaml
     cmds:
       - echo "2) Looping over all grases/*/grapi* folders to patch grapi injections..."
       - |
@@ -338,7 +338,7 @@ tasks:
             echo "No grapi injection files found in ${GRAPI_FOLDER}, skipping patching."
             continue
           fi
-          # Patch values-<stage>.yaml for each file
+          # Patch values.yaml for each file
           for file_path in ${FINDFILES}; do
             rel_path=$(echo "${file_path}" | sed "s,${GRAPI_FOLDER}/,,g")
             group_name=$(echo "${rel_path}" | cut -d/ -f1)
@@ -363,8 +363,8 @@ tasks:
             if [ "${file_name}" = "index.ts" ]; then continue; fi
             echo "patching: ${GRAS_NAME}/grapi - ${group_name} - ${injection_name} - ${file_name}"
             # Remove old entry if exists
-            yq -i "del(.grases[] | select(.name == \"${GRAS_NAME}\").grapi.${group_name}[] | select(.name == \"${injection_name}\"))" "{{.STAGE_VALUES_FILE}}"
-            yq -i ".grases[] |= (select(.name == \"${GRAS_NAME}\") | .grapi.${group_name} += [load_props(\"${base64_content_file}\")])" "{{.STAGE_VALUES_FILE}}"
+            yq -i "del(.grases.${GRAS_NAME}.grapi.${group_name}[] | select(.name == \"${injection_name}\"))" "{{.VALUES_YAML_PATH}}"
+            yq -i ".grases.${GRAS_NAME}.grapi.${group_name} += [load_props(\"${base64_content_file}\")]" "{{.VALUES_YAML_PATH}}"
             rm ${base64_content_file} 2>/dev/null || true
           done
         done
@@ -404,8 +404,8 @@ tasks:
             continue
           fi
           # Clear existing custommodules for this gras
-          yq -i "del(.grases[] | select(.name == \"${GRAS_NAME}\").gruim.${cm}[])" "{{.STAGE_VALUES_FILE}}"
-          # Patch values-<stage>.yaml for each file
+          yq -i "del(.grases.${GRAS_NAME}.gruim.${cm}[])" "{{.VALUES_YAML_PATH}}"
+          # Patch values.yaml for each file
           for file_path in ${FINDFILES}; do
             rel_path=$(echo "${file_path}" | sed "s,${GRUIM_FOLDER}/,,g")
             group_name=$(echo "${rel_path}" | cut -d/ -f1)
@@ -419,7 +419,7 @@ tasks:
             ${SED} "1s/^/name=${injection_name}\n/" ${base64_content_file}
             if [ "${file_name}" = "index.ts" ]; then continue; fi
             echo "patching: ${GRAS_NAME}/gruim - ${cm} - ${injection_name} - ${file_name}"
-            yq -i ".grases[] |= (select(.name == \"${GRAS_NAME}\") | .gruim.${cm} += [load_props(\"${base64_content_file}\")])" "{{.STAGE_VALUES_FILE}}"
+            yq -i ".grases.${GRAS_NAME}.gruim.${cm} += [load_props(\"${base64_content_file}\")]" "{{.VALUES_YAML_PATH}}"
             rm ${base64_content_file} 2>/dev/null || true
           done
         done

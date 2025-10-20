@@ -1,12 +1,12 @@
-{{- range $idx, $gras := .Values.grases }}
+{{- range $grasName, $gras := .Values.grases }}
   {{- if $gras.enabled }}
 apiVersion: grsf.grpl.io/v1alpha1
 kind: GrappleApplicationSet
 metadata:
-  name: {{ printf "%s-%s-%s" $.Release.Namespace $.Release.Name $gras.name | quote }}
+  name: {{ printf "%s-%s-%s" $.Release.Namespace $.Release.Name $grasName | quote }}
 spec:
   grapis:
-  - name: {{ printf "%s-%s-%s" $.Release.Namespace $.Release.Name $gras.name | quote }}
+  - name: {{ printf "%s-%s-%s" $.Release.Namespace $.Release.Name $grasName | quote }}
     spec:
       {{- if $gras.gras }}
       {{ $gras.gras | toYaml | nindent 6 }}
@@ -15,7 +15,7 @@ spec:
       {{ $gras.grapi | toYaml | nindent 6 }}
       {{- end }}
   gruims:
-  - name: {{ printf "%s-%s-%s" $.Release.Namespace $.Release.Name $gras.name | quote }}
+  - name: {{ printf "%s-%s-%s" $.Release.Namespace $.Release.Name $grasName | quote }}
     spec:
       {{- if $gras.gras }}
       {{ $gras.gras | toYaml | nindent 6 }}

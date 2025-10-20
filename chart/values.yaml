@@ -8,7 +8,7 @@ env: {}
 gras-deploy:
   enabled: false
 grases:
-  - name: gras
+  gras:
     enabled: true
     gras: {}
     grapi:
