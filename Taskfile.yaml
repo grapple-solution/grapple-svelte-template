@@ -535,6 +535,7 @@ tasks:
 
         helm upgrade --install {{.CHART_NAME}} {{.AWS_REPO_URL}}/{{.CHART_NAME}} ${VALUES_FILE_COMMAND} --version {{.SEMVER}} --namespace {{.NS}} --create-namespace
 
+
   deploy-local:
     desc: Deploy the Helm chart to the Grapple cluster
     vars:
@@ -551,15 +552,35 @@ tasks:
         # patch the image:
         yq e -i '.image.repository = "{{.IMAGE_REGISTRY}}/{{.IMAGE_REPO}}"' {{.VALUES_YAML_PATH}}
         yq e -i '.image.tag = "{{.TAG}}-{{.GIT_HASH}}"' {{.VALUES_YAML_PATH}}
-        
+
+
         # patch test image:
         yq e -i '.imagetest.repository = "{{.IMAGE_REGISTRY}}/{{.IMAGE_REPO}}-test"' {{.VALUES_YAML_PATH}}
         yq e -i '.imagetest.tag = "{{.TAG}}-{{.GIT_HASH}}"' {{.VALUES_YAML_PATH}}
 
+        VALUES_STAGE=$(echo "{{.VALUES_YAML_PATH}}" | sed "s,.yaml,-{{.STAGE}}.yaml,g")
+        echo "VALUES_STAGE: ${VALUES_STAGE}"
+        if [ -f ${VALUES_STAGE} ]; then
+
+          # patch data container:
+          if [ "$(yq '.gras.grapi.initContainers[0] | has("spec")' ${VALUES_STAGE})" = "true" ]; then
+          yq e -i '.gras.grapi.initContainers[0].spec.image = "grpl/{{.APP_NAME}}-{{.STAGE}}-data:{{.TAG}}"' ${VALUES_STAGE} || true
+          fi
+          if [ "$(yq '.gras.grapi.initContainers[1] | has("spec")' ${VALUES_STAGE})" = "true" ]; then
+          yq e -i '.gras.grapi.initContainers[1].spec.image = "grpl/{{.APP_NAME}}-{{.STAGE}}-data:{{.TAG}}"' ${VALUES_STAGE} || true
+          fi
+
+          VALUES_FILE_COMMAND=" -f ${VALUES_STAGE} "
+          echo "VALUES_FILE_STAGE: ${VALUES_FILE_STAGE}"
+
+        else
+          VALUES_FILE_STAGE=""
+        fi
+
         # run dependency update in order to prevent issue on the first build
         helm dep up chart
 
-        helm upgrade --install {{.CHART_NAME}} {{.CHART_FOLDER}} --namespace "{{.CHART_NAME_SHORT}}-{{.STAGE}}-{{.GIT_HASH}}" --create-namespace
+        helm upgrade --install {{.CHART_NAME}} {{.CHART_FOLDER}} ${VALUES_FILE_COMMAND} --namespace "{{.CHART_NAME_SHORT}}-{{.STAGE}}-{{.GIT_HASH}}" --create-namespace
 
   update-bitbucket-pr:
     desc: Deploy the Helm chart to the Grapple cluster
