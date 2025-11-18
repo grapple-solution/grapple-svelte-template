@@ -38,22 +38,11 @@ spec:
                 configMapKeyRef:
                   name: "{{ .Release.Namespace }}-{{ $.Release.Namespace }}-{{ .Release.Name }}-gras-gruim-muim"
                   key: remoteentry
-            - name: SVELTE_APP_GRAPPLE_STAGE
-              value: {{.Values.stage}}
-          {{- if .Values.env }}
-            {{- toYaml .Values.env | nindent 12 }}
-          {{- end }}
-          {{- range .Values.env }}
-            {{- if eq .name "DEV" }}
-              {{- if not .value }}
             - name: SVELTE_APP_REMOTE_URL
               valueFrom:
                 configMapKeyRef:
                   name: "{{ .Release.Namespace }}-{{ $.Release.Namespace }}-{{ .Release.Name }}-gras-gruim-muim"
                   key: remoteentry
-              {{- end }}
-            {{- end }}
-          {{- end }}
           command:
             - sh
             - -c
@@ -68,6 +57,7 @@ spec:
                   sleep 1
                   echo -n '.'
               done || echo "\n\nERROR: could not reach: ${SVELTE_APP_REMOTE_URL}/dashboard.json after 10 minutes"
+  
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -80,20 +70,13 @@ spec:
                 configMapKeyRef:
                   name: "{{ .Release.Namespace }}-{{ $.Release.Namespace }}-{{ .Release.Name }}-gras-gruim-muim"
                   key: remoteentry
-          {{- if .Values.env }}
-            {{- toYaml .Values.env | nindent 12 }}
-          {{- end }}
-          {{- range .Values.env }}
-            {{- if eq .name "DEV" }}
-              {{- if not .value }}
+            - name: SVELTE_APP_GRAPPLE_STAGE
+              value: {{.Values.stage}}
             - name: SVELTE_APP_REMOTE_URL
               valueFrom:
                 configMapKeyRef:
                   name: "{{ .Release.Namespace }}-{{ $.Release.Namespace }}-{{ .Release.Name }}-gras-gruim-muim"
                   key: remoteentry
-              {{- end }}
-            {{- end }}
-          {{- end }}
           ports:
             - name: http
               containerPort: 80
