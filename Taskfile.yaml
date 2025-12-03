@@ -200,6 +200,7 @@ tasks:
             for file_path in ${FINDFILES}; do
               rel_path=$(echo "${file_path}" | sed "s,${GRAPI_FOLDER}/,,g")
               group_name=$(echo "${rel_path}" | cut -d/ -f1)
+              if [ "${group_name}" == "modules" ]; then continue; fi
               file_name=$(echo "${rel_path}" | cut -d/ -f2)
               file_extension=$(echo ${file_name##*.})
               injection_name=$(echo ${file_name} | sed \
@@ -302,6 +303,15 @@ tasks:
           done
         done
       
+  patch-values-file-modules:
+    desc: Update init-modules image for DevSpace dev pipeline
+    cmds:
+      - |
+        TAG=$(git describe --always)
+        IMAGE_NAME="grpl/grapple-template-modules:${TAG}"
+        echo "Patching init-modules image to: ${IMAGE_NAME}"
+        # Update both the spec.image and the duplicate image field
+        yq e -i "(.grases[].grapi.initContainers[] | select(.name == \"init-modules\")).spec.image = \"${IMAGE_NAME}\"" {{.VALUES_YAML_PATH}}
 
   patch-values-file:
     desc: Gather and encode backend (grapi) and frontend (gruim) injections 
@@ -342,6 +352,7 @@ tasks:
           for file_path in ${FINDFILES}; do
             rel_path=$(echo "${file_path}" | sed "s,${GRAPI_FOLDER}/,,g")
             group_name=$(echo "${rel_path}" | cut -d/ -f1)
+            if [ "${group_name}" == "modules" ]; then continue; fi
             file_name=$(echo "${rel_path}" | cut -d/ -f2)
             file_extension=$(echo ${file_name##*.})
             injection_name=$(echo ${file_name} | sed \
@@ -453,6 +464,15 @@ tasks:
   package-chart:
     desc: Package the Helm chart
     cmds:
+      # Update init container image before packaging
+      - |
+        IMAGE_NAME="grpl/{{.APP_NAME}}-modules:{{.TAG}}"
+        if [ "{{.STAGE}}" != "prd" ]; then
+          IMAGE_NAME="grpl/{{.APP_NAME}}-{{.STAGE}}-modules:{{.TAG}}"
+        fi
+        echo "Patching init-modules image to: ${IMAGE_NAME}"
+        # Update both the spec.image and the duplicate image field
+        yq e -i "(.grases[].grapi.initContainers[] | select(.name == \"init-modules\")).spec.image = \"${IMAGE_NAME}\"" {{.VALUES_YAML_PATH}}
       - |
         # rename the chart properly
         yq e -i '.name = "{{.CHART_NAME}}"' {{.CHART_FOLDER}}/Chart.yaml
