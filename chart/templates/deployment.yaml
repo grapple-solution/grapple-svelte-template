@@ -36,12 +36,12 @@ spec:
             - name: REMOTE_ENTRY_URL
               valueFrom:
                 configMapKeyRef:
-                  name: "{{ .Release.Namespace }}-{{ $.Release.Namespace }}-{{ .Release.Name }}-gras-gruim-muim"
+                  name: "{{ .Release.Namespace }}-{{ .Release.Name }}-gras-gruim-muim"
                   key: remoteentry
             - name: SVELTE_APP_REMOTE_URL
               valueFrom:
                 configMapKeyRef:
-                  name: "{{ .Release.Namespace }}-{{ $.Release.Namespace }}-{{ .Release.Name }}-gras-gruim-muim"
+                  name: "{{ .Release.Namespace }}-{{ .Release.Name }}-gras-gruim-muim"
                   key: remoteentry
           command:
             - sh
@@ -68,14 +68,14 @@ spec:
             - name: REMOTE_ENTRY_URL
               valueFrom:
                 configMapKeyRef:
-                  name: "{{ .Release.Namespace }}-{{ $.Release.Namespace }}-{{ .Release.Name }}-gras-gruim-muim"
+                  name: "{{ .Release.Namespace }}-{{ .Release.Name }}-gras-gruim-muim"
                   key: remoteentry
             - name: SVELTE_APP_GRAPPLE_STAGE
               value: {{.Values.stage}}
             - name: SVELTE_APP_REMOTE_URL
               valueFrom:
                 configMapKeyRef:
-                  name: "{{ .Release.Namespace }}-{{ $.Release.Namespace }}-{{ .Release.Name }}-gras-gruim-muim"
+                  name: "{{ .Release.Namespace }}-{{ .Release.Name }}-gras-gruim-muim"
                   key: remoteentry
           ports:
             - name: http

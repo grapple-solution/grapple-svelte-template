@@ -2,8 +2,20 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+strapi:
+  enabled: true
+  HOST: "0.0.0.0"
+  PORT: "1337"
+  APP_KEYS: ""
+  API_TOKEN_SALT: ""
+  ADMIN_JWT_SECRET: ""
+  TRANSFER_TOKEN_SALT: ""
+  ENCRYPTION_KEY: ""
+  JWT_SECRET: ""
 stage: prd
 env: {}
+db:
+  dbClusterName: svelte-template-db
 # configuration for grapple ApplicationSet (gras)
 gras-deploy:
   enabled: false
@@ -12,9 +24,9 @@ grases:
     enabled: true
     gras: {}
     grapi:
-      # beimagetag: "v0.130"
-      beimage: grpl/grapi
-      beimagetag: 0.2.9
+      runimages:
+        image: grpl/grapi
+        tag: "0.2.9"
       discoveredrepos: true
       ingress: true
       ssl: true
@@ -31,7 +43,7 @@ grases:
         - name: init-modules
           spec:
             name: init-modules
-            image: grpl/grapple-template-modules:2ffc9d8
+            image: grpl/grapple-svelte-template-modules:0.1.0.dev
             imagePullPolicy: Always
             command: ["/bin/sh", "-c", "cp -r /modules/gras/* /opt/custom-modules/ && chown -R 1000:1000 /opt/custom-modules || true"]
             volumeMounts:
@@ -44,7 +56,7 @@ grases:
         - name: custom-modules
           emptyDir: {}
       extraSecrets:
-        - grpl-test-cm-conn-credential
+        - svelte-template-db-conn-credential
       # volumes:
       #   - name: data
       #     emptyDir: {}
@@ -145,9 +157,9 @@ grases:
       prerelationpatches: []
       prepatches: []
     gruim:
-      # uiimagetag: "0.1.38"
-      uiimage: grpl/gruim
-      uiimagetag: 0.2.9
+      runimages:
+        tag: 0.2.9
+        name: grpl/gruim
       ssl: true
       sslissuer: letsencrypt-grapple-demo
       style: '{"colors":{"primary":{"DEFAULT":"#34344A","fg":"#fff"},"accent":{"DEFAULT":"#CC5A71","fg":"#fff"}}}'
@@ -156,15 +168,15 @@ grases:
       custommodules: []
 replicaCount: 1
 image:
-  repository: grpl/grapple-template-pr
+  repository: grpl/grapple-svelte-template
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "0.1.45.pr-33"
+  tag: "0.1.0.dev-c970a67"
 imagetest:
-  repository: apptest
+  repository: grpl/grapple-svelte-template-test
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: "0.1.0.dev-c970a67"
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
