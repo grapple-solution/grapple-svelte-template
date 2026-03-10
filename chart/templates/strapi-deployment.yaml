@@ -54,7 +54,7 @@ spec:
             mountPath: "/tmp/strapi-db"
       containers:
         - name: grapple-aladv-strapi
-          image: grpl/grapple-strapi:0.3.4
+          image: grpl/grapple-strapi:0.3.5
           imagePullPolicy: Always
           command:
           - sh
