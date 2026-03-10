@@ -62,13 +62,15 @@ spec:
           - |
             sed -i "s,http://localhost:3001,${LAYOUT_RENDERER_URL},g" node_modules/strapi-plugin-grapple-builder/dist/_chunks/*
             pnpm build
-            pnpm start
+            pnpm develop
           ports:
           - containerPort: 1337
             protocol: TCP
           - containerPort: 5173
             protocol: TCP
           env:
+            - name: NODE_ENV
+              value: "development"
             # superfluous env vars STRAPI_ADMIN_*
             {{- if .Values.lookup.enabled }}
             - name: STRAPI_ADMIN_HOST
