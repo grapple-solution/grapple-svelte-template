@@ -61,7 +61,7 @@ vars:
         if [ "{{.STAGE}}" = "prd" ]; then
           echo ""
         elif [ "{{.STAGE}}" = "nop" ]; then
-          echo "-{{.STAGE}}-{{.GIT_HASH}}"
+          echo "-{{.STAGE}}"
         elif [ "{{.STAGE}}" = "pr" ]; then
           echo "-{{.STAGE}}-{{.PR_NR}}"
         else
@@ -79,7 +79,7 @@ vars:
         if [ "{{.STAGE}}" = "prd" ]; then
           echo ""
         elif [ "{{.STAGE}}" = "nop" ]; then
-          echo ".{{.STAGE}}-{{.GIT_HASH}}"
+          echo ".{{.STAGE}}"
         elif [ "{{.STAGE}}" = "pr" ]; then
           echo ".{{.STAGE}}-{{.PR_NR}}"
         else
@@ -148,7 +148,7 @@ tasks:
       - |
         yq e -i '.vars.IMAGE_REGISTRY = "{{.IMAGE_REGISTRY}}"' devspace.yaml
         yq e -i '.vars.IMAGE_REPO = "{{.IMAGE_REPO}}"' devspace.yaml
-        devspace build --skip-push --tag {{.TAG}}-{{.GIT_HASH}} -n default --no-warn
+        devspace build --skip-push --tag {{.TAG}} -n default --no-warn
 
   build-and-push-images-local:
     desc: Build the images
@@ -161,7 +161,7 @@ tasks:
       - |
         yq e -i '.vars.IMAGE_REGISTRY = "{{.IMAGE_REGISTRY}}"' devspace.yaml
         yq e -i '.vars.IMAGE_REPO = "{{.IMAGE_REPO}}"' devspace.yaml
-        devspace build --tag "{{.TAG}}-{{.GIT_HASH}}" -n default --no-warn
+        devspace build --tag "{{.TAG}}" -n default --no-warn
 
   patch-values-file-patches-only:
     desc: Gather and encode backend (grapi) injections (patches only)
@@ -188,9 +188,9 @@ tasks:
             echo "Processing grapi injections for ${GRAS_NAME} (${GRAPI_FOLDER})..."
             # Find .sh and .bash files in grapi folder
             if [[ "$OSTYPE" == "msys"* ]]; then
-              FINDFILES=$(find "${GRAPI_FOLDER}" -name '*.sh' -or -name '*.bash' 2>/dev/null)
+              FINDFILES=$(find "${GRAPI_FOLDER}" -name '*.sh' -or -name '*.bash' 2>/dev/null | sort)
             else
-              FINDFILES=$(find "${GRAPI_FOLDER}" -name '*.sh' -or -name '*.bash' 2>/dev/null)
+              FINDFILES=$(find "${GRAPI_FOLDER}" -name '*.sh' -or -name '*.bash' 2>/dev/null | sort)
             fi
             if [ -z "${FINDFILES}" ]; then
               echo "No grapi injection files found in ${GRAPI_FOLDER}, skipping patching."
@@ -308,7 +308,7 @@ tasks:
     cmds:
       - |
         TAG=$(git describe --always)
-        IMAGE_NAME="grpl/grapple-template-modules:${TAG}"
+        IMAGE_NAME="${IMAGE_REGISTRY}/${IMAGE_REPO}-modules:${TAG}"
         echo "Patching init-modules image to: ${IMAGE_NAME}"
         # Update both the spec.image and the duplicate image field
         yq e -i "(.grases[].grapi.initContainers[] | select(.name == \"init-modules\")).spec.image = \"${IMAGE_NAME}\"" {{.VALUES_YAML_PATH}}
@@ -340,9 +340,9 @@ tasks:
           echo "Processing grapi injections for ${GRAS_NAME} (${GRAPI_FOLDER})..."
           # Find .ts, .sh and .bash files in grapi folder
           if [[ "$OSTYPE" == "msys"* ]]; then
-            FINDFILES=$(find "${GRAPI_FOLDER}" -name '*.ts' -or -name '*.sh' -or -name '*.bash' 2>/dev/null)
+            FINDFILES=$(find "${GRAPI_FOLDER}" -name '*.ts' -or -name '*.sh' -or -name '*.bash' 2>/dev/null | sort)
           else
-            FINDFILES=$(find "${GRAPI_FOLDER}" -name '*.ts' -or -name '*.sh' -or -name '*.bash' 2>/dev/null)
+            FINDFILES=$(find "${GRAPI_FOLDER}" -name '*.ts' -or -name '*.sh' -or -name '*.bash' 2>/dev/null | sort)
           fi
           if [ -z "${FINDFILES}" ]; then
             echo "No grapi injection files found in ${GRAPI_FOLDER}, skipping patching."
@@ -406,9 +406,9 @@ tasks:
           cm="custommodules"
           # Find .svelte and .jsx files in gruim folder
           if [[ "$OSTYPE" == "msys"* ]]; then
-            FINDFILES=$(find "${GRUIM_FOLDER}/${cm}" -name '*.svelte' -or -name '*.jsx' 2>/dev/null)
+            FINDFILES=$(find "${GRUIM_FOLDER}/${cm}" -name '*.svelte' -or -name '*.jsx' 2>/dev/null | sort)
           else
-            FINDFILES=$(find "${GRUIM_FOLDER}/${cm}" -name '*.svelte' -or -name '*.jsx' 2>/dev/null)
+            FINDFILES=$(find "${GRUIM_FOLDER}/${cm}" -name '*.svelte' -or -name '*.jsx' 2>/dev/null | sort)
           fi
           if [ -z "${FINDFILES}" ]; then
             echo "No gruim injection files found in ${GRUIM_FOLDER}/${cm}, skipping patching."
@@ -564,6 +564,7 @@ tasks:
       TAG:
         sh: if [ "{{.STAGE}}" = "dev" ]; then echo "{{.CURRENT_VERSION}}.{{.STAGE}}"; else echo "{{.TAG}}"; fi
     cmds:
+      - task: patch-values-file
       - |
         # patch the chart:
         yq e -i '.version = "{{.CURRENT_VERSION}}"' {{.CHART_FOLDER}}/Chart.yaml
@@ -571,36 +572,29 @@ tasks:
 
         # patch the image:
         yq e -i '.image.repository = "{{.IMAGE_REGISTRY}}/{{.IMAGE_REPO}}"' {{.VALUES_YAML_PATH}}
-        yq e -i '.image.tag = "{{.TAG}}-{{.GIT_HASH}}"' {{.VALUES_YAML_PATH}}
+        yq e -i '.image.tag = "{{.TAG}}"' {{.VALUES_YAML_PATH}}
 
 
         # patch test image:
         yq e -i '.imagetest.repository = "{{.IMAGE_REGISTRY}}/{{.IMAGE_REPO}}-test"' {{.VALUES_YAML_PATH}}
-        yq e -i '.imagetest.tag = "{{.TAG}}-{{.GIT_HASH}}"' {{.VALUES_YAML_PATH}}
+        yq e -i '.imagetest.tag = "{{.TAG}}"' {{.VALUES_YAML_PATH}}
 
-        VALUES_STAGE=$(echo "{{.VALUES_YAML_PATH}}" | sed "s,.yaml,-{{.STAGE}}.yaml,g")
-        echo "VALUES_STAGE: ${VALUES_STAGE}"
-        if [ -f ${VALUES_STAGE} ]; then
 
-          # patch data container:
-          if [ "$(yq '.gras.grapi.initContainers[0] | has("spec")' ${VALUES_STAGE})" = "true" ]; then
-          yq e -i '.gras.grapi.initContainers[0].spec.image = "grpl/{{.APP_NAME}}-{{.STAGE}}-data:{{.TAG}}"' ${VALUES_STAGE} || true
-          fi
-          if [ "$(yq '.gras.grapi.initContainers[1] | has("spec")' ${VALUES_STAGE})" = "true" ]; then
-          yq e -i '.gras.grapi.initContainers[1].spec.image = "grpl/{{.APP_NAME}}-{{.STAGE}}-data:{{.TAG}}"' ${VALUES_STAGE} || true
-          fi
+        IMAGE_NAME="grpl/{{.IMAGE_REPO}}-modules:{{.TAG}}"
+        echo "Patching init-modules image to: ${IMAGE_NAME}"
+        # Update both the spec.image and the duplicate image field
+        yq e -i "(.grases[].grapi.initContainers[] | select(.name == \"init-modules\")).spec.image = \"${IMAGE_NAME}\"" {{.VALUES_YAML_PATH}}
 
-          VALUES_FILE_COMMAND=" -f ${VALUES_STAGE} "
-          echo "VALUES_FILE_STAGE: ${VALUES_FILE_STAGE}"
+        DATA_IMAGE_NAME="grpl/{{.IMAGE_REPO}}-data:{{.TAG}}"
+        echo "Patching init-data image to: ${DATA_IMAGE_NAME}"
+        yq e -i "(.grases[].grapi.initContainers[] | select(.spec.image | contains(\"-data\"))).spec.image = \"${DATA_IMAGE_NAME}\"" {{.VALUES_YAML_PATH}}
 
-        else
-          VALUES_FILE_STAGE=""
-        fi
 
         # run dependency update in order to prevent issue on the first build
         helm dep up chart
 
-        helm upgrade --install {{.CHART_NAME}} {{.CHART_FOLDER}} ${VALUES_FILE_COMMAND} --namespace "{{.CHART_NAME_SHORT}}-{{.STAGE}}-{{.GIT_HASH}}" --create-namespace
+        helm upgrade --install {{.CHART_NAME}} {{.CHART_FOLDER}} ${VALUES_FILE_COMMAND} --namespace "{{.CHART_NAME_SHORT}}-{{.STAGE}}" --create-namespace -f ./chart/values-dev.yaml
+      - task: reset-values-file
 
   update-bitbucket-pr:
     desc: Deploy the Helm chart to the Grapple cluster
