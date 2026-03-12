@@ -188,9 +188,9 @@ tasks:
             echo "Processing grapi injections for ${GRAS_NAME} (${GRAPI_FOLDER})..."
             # Find .sh and .bash files in grapi folder
             if [[ "$OSTYPE" == "msys"* ]]; then
-              FINDFILES=$(find "${GRAPI_FOLDER}" -name '*.sh' -or -name '*.bash' 2>/dev/null)
+              FINDFILES=$(find "${GRAPI_FOLDER}" -name '*.sh' -or -name '*.bash' 2>/dev/null | sort)
             else
-              FINDFILES=$(find "${GRAPI_FOLDER}" -name '*.sh' -or -name '*.bash' 2>/dev/null)
+              FINDFILES=$(find "${GRAPI_FOLDER}" -name '*.sh' -or -name '*.bash' 2>/dev/null | sort)
             fi
             if [ -z "${FINDFILES}" ]; then
               echo "No grapi injection files found in ${GRAPI_FOLDER}, skipping patching."
@@ -340,9 +340,9 @@ tasks:
           echo "Processing grapi injections for ${GRAS_NAME} (${GRAPI_FOLDER})..."
           # Find .ts, .sh and .bash files in grapi folder
           if [[ "$OSTYPE" == "msys"* ]]; then
-            FINDFILES=$(find "${GRAPI_FOLDER}" -name '*.ts' -or -name '*.sh' -or -name '*.bash' 2>/dev/null)
+            FINDFILES=$(find "${GRAPI_FOLDER}" -name '*.ts' -or -name '*.sh' -or -name '*.bash' 2>/dev/null | sort)
           else
-            FINDFILES=$(find "${GRAPI_FOLDER}" -name '*.ts' -or -name '*.sh' -or -name '*.bash' 2>/dev/null)
+            FINDFILES=$(find "${GRAPI_FOLDER}" -name '*.ts' -or -name '*.sh' -or -name '*.bash' 2>/dev/null | sort)
           fi
           if [ -z "${FINDFILES}" ]; then
             echo "No grapi injection files found in ${GRAPI_FOLDER}, skipping patching."
@@ -406,9 +406,9 @@ tasks:
           cm="custommodules"
           # Find .svelte and .jsx files in gruim folder
           if [[ "$OSTYPE" == "msys"* ]]; then
-            FINDFILES=$(find "${GRUIM_FOLDER}/${cm}" -name '*.svelte' -or -name '*.jsx' 2>/dev/null)
+            FINDFILES=$(find "${GRUIM_FOLDER}/${cm}" -name '*.svelte' -or -name '*.jsx' 2>/dev/null | sort)
           else
-            FINDFILES=$(find "${GRUIM_FOLDER}/${cm}" -name '*.svelte' -or -name '*.jsx' 2>/dev/null)
+            FINDFILES=$(find "${GRUIM_FOLDER}/${cm}" -name '*.svelte' -or -name '*.jsx' 2>/dev/null | sort)
           fi
           if [ -z "${FINDFILES}" ]; then
             echo "No gruim injection files found in ${GRUIM_FOLDER}/${cm}, skipping patching."
