@@ -137,54 +137,6 @@ spec:
               port: 1337
             failureThreshold: 60
             periodSeconds: 10
-          {{- if .Values.lookup.enabled }}
-          lifecycle:
-            postStart:
-              exec:
-                command:
-                  - sh
-                  - -c
-                  - |
-                    sleep 30
-                    while ! curl -k -Is "${SVELTE_APP_FE_REMOTE_URL}" 2>/dev/null | head -1 | grep 200; do
-                        echo "waiting for remoteEntry.js to be available..."
-                        sleep 10
-                    done
-                    sleep 5
-                    echo "starting to verify if mf-source update with curl is successful..."
-                    until ! curl -X PUT --fail \
-                        -H 'Content-Type: application/json' \
-                        -d"{\"name\": \"ALADV\", \"manifestUrl\": \"$(echo $SVELTE_APP_FE_REMOTE_URL | sed 's,remoteEntry.js,dashboard.json,g')\"}" \
-                        {{ $prot }}{{ .Release.Namespace }}-strapi.{{ index $secret.data "GRAPPLE_DNS" | b64dec }}/mf-builder/mf-sources/o90q2lrag1c58nqgpux8gb7v
-                      do 
-                        echo "update of mf-source with curl not yet successful. Retrying..."
-                        sleep 10
-                      done
-                    echo "update of mf-source with curl was successful..."
-          {{- else }}
-          lifecycle:
-            postStart:
-              exec:
-                command:
-                  - sh
-                  - -c
-                  - |
-                    sleep 30
-                    while ! curl -k -Is "${SVELTE_APP_FE_REMOTE_URL}" 2>/dev/null | head -1 | grep 200; do
-                        echo "waiting for remoteEntry.js to be available..."
-                        sleep 10
-                    sleep 5
-                    echo "starting to verify if mf-source update with curl is successful..."
-                    until ! curl -X PUT --fail \
-                        -H 'Content-Type: application/json' \
-                        -d"{\"name\": \"ALADV\", \"manifestUrl\": \"$(echo $SVELTE_APP_FE_REMOTE_URL | sed 's,remoteEntry.js,dashboard.json,g')\"}" \
-                        {{ $prot }}{{ .Release.Namespace }}-strapi.{{ .Values.lookup.domain }}/mf-builder/mf-sources/o90q2lrag1c58nqgpux8gb7v
-                      do 
-                        echo "update of mf-source with curl not yet successful. Retrying..."
-                        sleep 10
-                      done
-                    echo "update of mf-source with curl was successful..."
-          {{- end }}
         - name: grapple-aladv-strapi-preview
           image: grpl/grapple-strapi-preview:0.3.3
           imagePullPolicy: Always
@@ -224,4 +176,64 @@ spec:
               port: 3001
             failureThreshold: 30
             periodSeconds: 10
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: strapi-mf-sources-update
+spec:
+  template:
+    metadata:
+      name: strapi-mf-sources-update
+    spec:
+      containers:
+      - image: curlimages/curl
+        name: strapi-mf-sources-update
+        env:
+        - name: SVELTE_APP_FE_REMOTE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: "{{ .Release.Namespace }}-{{ .Release.Name }}-gras-gruim-muim"
+              key: remoteentry
+        {{- if .Values.lookup.enabled }}
+        command:
+          - sh
+          - -c
+          - |
+            sleep 30
+            while ! curl -k -Is "${SVELTE_APP_FE_REMOTE_URL}" 2>/dev/null | head -1 | grep 200; do
+                echo "waiting for remoteEntry.js to be available..."
+                sleep 10
+            done
+            sleep 5
+            echo "starting to verify if mf-source update with curl is successful..."
+            manifestUrl=$(echo "$SVELTE_APP_FE_REMOTE_URL" | sed 's,remoteEntry.js,dashboard.json,g')
+            payload=$(printf '{"name":"ALADV","manifestUrl":"%s"}' "$manifestUrl")
+            while ! curl -X PUT --fail -s -H 'Content-Type: application/json' -d"${payload}" "{{ $prot }}{{ .Release.Namespace }}-strapi.{{ index $secret.data "GRAPPLE_DNS" | b64dec }}/mf-builder/mf-sources/o90q2lrag1c58nqgpux8gb7v" >/dev/null 2>&1
+              do 
+                echo "update of mf-source with curl not yet successful. Retrying..."
+                sleep 10
+              done
+            echo "update of mf-source with curl was successful..."
+        {{- else }}
+        command:
+          - sh
+          - -c
+          - |
+            sleep 30
+            while ! curl -k -Is "${SVELTE_APP_FE_REMOTE_URL}" 2>/dev/null | head -1 | grep 200; do
+                echo "waiting for remoteEntry.js to be available..."
+                sleep 10
+            sleep 5
+            echo "starting to verify if mf-source update with curl is successful..."
+            manifestUrl=$(echo "$SVELTE_APP_FE_REMOTE_URL" | sed 's,remoteEntry.js,dashboard.json,g')
+            payload=$(printf '{"name":"ALADV","manifestUrl":"%s"}' "$manifestUrl")
+            while ! curl -X PUT --fail -s -H 'Content-Type: application/json' -d"${payload}" "{{ $prot }}{{ .Release.Namespace }}-strapi.{{ .Values.lookup.domain }}/mf-builder/mf-sources/o90q2lrag1c58nqgpux8gb7v" >/dev/null 2>&1
+              do 
+                echo "update of mf-source with curl not yet successful. Retrying..."
+                sleep 10
+              done
+            echo "update of mf-source with curl was successful..."
+        {{- end }}
+      restartPolicy: Never
 {{- end }}
