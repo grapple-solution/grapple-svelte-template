@@ -31,6 +31,12 @@ grases:
       ingress: true
       ssl: true
       sslissuer: letsencrypt-grapple-demo
+      env:
+        - name: host
+          value: "svelte-template-db-mysql"
+        - name: port
+          value: "3306"
+
       initContainers:
         - name: test
           spec:
