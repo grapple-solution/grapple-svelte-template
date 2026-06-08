@@ -56,7 +56,7 @@ grases:
         - name: custom-modules
           emptyDir: {}
       extraSecrets:
-        - svelte-template-db-conn-credential
+        - svelte-template-db-mysql-account-root
       # volumes:
       #   - name: data
       #     emptyDir: {}
