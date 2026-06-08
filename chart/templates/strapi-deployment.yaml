@@ -47,7 +47,7 @@ spec:
           fi
         envFrom:
           - secretRef:
-              name: {{ .Values.db.dbClusterName }}-conn-credential
+              name: {{ .Values.db.dbClusterName }}-mysql-account-root
         volumeMounts:
           - name: strapi-db
             readOnly: true
@@ -92,22 +92,22 @@ spec:
             - name: DATABASE_HOST
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.db.dbClusterName }}-conn-credential
+                  name: {{ .Values.db.dbClusterName }}-mysql-account-root
                   key: host
             - name: DATABASE_PORT
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.db.dbClusterName }}-conn-credential
+                  name: {{ .Values.db.dbClusterName }}-mysql-account-root
                   key: port
             - name: DATABASE_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.db.dbClusterName }}-conn-credential
+                  name: {{ .Values.db.dbClusterName }}-mysql-account-root
                   key: username
             - name: DATABASE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.db.dbClusterName }}-conn-credential
+                  name: {{ .Values.db.dbClusterName }}-mysql-account-root
                   key: password
             - name: SVELTE_APP_FE_REMOTE_URL
               valueFrom:
