@@ -153,13 +153,12 @@ grases:
             datasource: "classicmodelsid"
       controllers: []
       postpatches: []
-      injections: []
       prerelationpatches: []
       prepatches: []
     gruim:
       runimages:
         tag: 0.2.9
-        name: grpl/gruim
+        image: grpl/gruim
       ssl: true
       sslissuer: letsencrypt-grapple-demo
       style: '{"colors":{"primary":{"DEFAULT":"#34344A","fg":"#fff"},"accent":{"DEFAULT":"#CC5A71","fg":"#fff"}}}'
