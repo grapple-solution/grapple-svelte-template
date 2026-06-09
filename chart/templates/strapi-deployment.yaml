@@ -45,9 +45,14 @@ spec:
           else
             echo "database already initialized, skipping import"
           fi
+        env:
+          - name: host
+            value: "{{ .Values.db.dbClusterName }}-mysql"
+          - name: port
+            value: "3306"
         envFrom:
           - secretRef:
-              name: {{ .Values.db.dbClusterName }}-conn-credential
+              name: {{ .Values.db.dbClusterName }}-mysql-account-root
         volumeMounts:
           - name: strapi-db
             readOnly: true
@@ -90,24 +95,18 @@ spec:
             - name: DATABASE_NAME
               value: "strapi"
             - name: DATABASE_HOST
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.db.dbClusterName }}-conn-credential
-                  key: host
+              value: "{{ .Values.db.dbClusterName }}-mysql"
             - name: DATABASE_PORT
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.db.dbClusterName }}-conn-credential
-                  key: port
+              value: "3306"
             - name: DATABASE_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.db.dbClusterName }}-conn-credential
+                  name: {{ .Values.db.dbClusterName }}-mysql-account-root
                   key: username
             - name: DATABASE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.db.dbClusterName }}-conn-credential
+                  name: {{ .Values.db.dbClusterName }}-mysql-account-root
                   key: password
             - name: SVELTE_APP_FE_REMOTE_URL
               valueFrom:

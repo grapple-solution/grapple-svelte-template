@@ -1,14 +1,28 @@
+{{- if not (lookup "apps.kubeblocks.io/v1" "Cluster" .Release.Namespace .Values.db.dbClusterName) }}
 ---
-apiVersion: apps.kubeblocks.io/v1alpha1
+apiVersion: apps.kubeblocks.io/v1
 kind: Cluster
 metadata:
   name: {{ .Values.db.dbClusterName }}
+  annotations:
+    helm.sh/resource-policy: keep
 spec:
-  clusterDefinitionRef: apecloud-mysql
-  clusterVersionRef: ac-mysql-8.0.30
+  clusterDef: apecloud-mysql
+  topology: apecloud-mysql
+  terminationPolicy: Delete
+  schedulingPolicy:
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/managed-by: kubeblocks
+              topologyKey: kubernetes.io/hostname
   componentSpecs:
-  - componentDefRef: mysql
-    name: mysql
+  - name: mysql
+    serviceVersion: 8.0.30
     replicas: 1
     resources:
       limits:
@@ -25,4 +39,4 @@ spec:
         resources:
           requests:
             storage: 20Gi
-  terminationPolicy: Delete
+{{- end }}
