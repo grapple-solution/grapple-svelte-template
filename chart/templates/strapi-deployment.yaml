@@ -45,6 +45,11 @@ spec:
           else
             echo "database already initialized, skipping import"
           fi
+        env:
+          - name: host
+            value: "{{ .Values.db.dbClusterName }}-mysql"
+          - name: port
+            value: "3306"
         envFrom:
           - secretRef:
               name: {{ .Values.db.dbClusterName }}-mysql-account-root
@@ -90,15 +95,9 @@ spec:
             - name: DATABASE_NAME
               value: "strapi"
             - name: DATABASE_HOST
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.db.dbClusterName }}-mysql-account-root
-                  key: host
+              value: "{{ .Values.db.dbClusterName }}-mysql"
             - name: DATABASE_PORT
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.db.dbClusterName }}-mysql-account-root
-                  key: port
+              value: "3306"
             - name: DATABASE_USERNAME
               valueFrom:
                 secretKeyRef:
