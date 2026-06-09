@@ -36,12 +36,16 @@ grases:
           value: "svelte-template-db-mysql"
         - name: port
           value: "3306"
-
       initContainers:
         - name: test
           spec:
             name: init-db
             image: mysql
+            env:
+              - name: host
+                value: "svelte-template-db-mysql"
+              - name: port
+                value: "3306"
             command:
               - bash
               - -c
@@ -176,12 +180,12 @@ image:
   repository: grpl/grapple-svelte-template
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "0.1.0.dev-c970a67"
+  tag: "0.1.0.dev"
 imagetest:
   repository: grpl/grapple-svelte-template-test
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "0.1.0.dev-c970a67"
+  tag: "0.1.0.dev"
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
