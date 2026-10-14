@@ -2,20 +2,20 @@ const HtmlWebPackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const ModuleFederationPlugin = require("webpack/lib/container/ModuleFederationPlugin");
 const path = require("path");
-
+const webpack = require("webpack");
 const sveltePreprocess = require("svelte-preprocess");
+const includeEnv = require("svelte-environment-variables");
+const pkg = require("./package.json");
 
 const mode = process.env.NODE_ENV || "development";
 const prod = mode === "production";
 
 module.exports = {
-  output: {
-    // publicPath: prod?  "/modules/": "http://localhost:4001/",
-    publicPath: "auto",
-  },
+  entry: "./src/index.ts",
 
-  resolve: {
-    extensions: [".tsx", ".ts", ".jsx", ".js", ".json"],
+  output: {
+    path: path.resolve(__dirname, "dist"),
+    publicPath: "/",
   },
 
   resolve: {
@@ -24,6 +24,7 @@ module.exports = {
     },
     extensions: [".mjs", ".js", ".ts", ".svelte"],
     mainFields: ["svelte", "browser", "module", "main"],
+    conditionNames: ["svelte", "browser", "import", "require", "default"],
   },
 
   devServer: {
@@ -34,6 +35,11 @@ module.exports = {
 
   module: {
     rules: [
+      {
+        test: /\.ts$/,
+        loader: "ts-loader",
+        exclude: /node_modules/,
+      },
       {
         test: /\.svelte$/,
         use: {
@@ -94,6 +100,9 @@ module.exports = {
   mode,
 
   plugins: [
+    new webpack.DefinePlugin({
+      ...includeEnv(),
+    }),
     new ModuleFederationPlugin({
       name: "client",
       filename: "remoteEntry.js",
@@ -102,7 +111,25 @@ module.exports = {
         App: `${process.env.CONTAINER_NAME}@${process.env.SVELTE_APP_REMOTE_URL}/remoteEntry.js`,
       },
       exposes: {},
-      shared: {},
+      shared: {
+        svelte: {
+          singleton: true,
+          eager: true,
+          requiredVersion: pkg.devDependencies.svelte,
+        },
+        "svelte/internal": {
+          singleton: true,
+          eager: true,
+          version: pkg.devDependencies.svelte,
+          requiredVersion: pkg.devDependencies.svelte,
+        },
+        "svelte/store": {
+          singleton: true,
+          eager: true,
+          version: pkg.devDependencies.svelte,
+          requiredVersion: pkg.devDependencies.svelte,
+        },
+      },
     }),
     new MiniCssExtractPlugin({
       filename: "[name].css",
