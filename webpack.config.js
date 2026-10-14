@@ -16,6 +16,11 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, "dist"),
     publicPath: "/",
+    // publicPath: "auto",
+  },
+
+  resolve: {
+    extensions: [".tsx", ".ts", ".jsx", ".js", ".json"],
   },
 
   resolve: {
@@ -24,7 +29,6 @@ module.exports = {
     },
     extensions: [".mjs", ".js", ".ts", ".svelte"],
     mainFields: ["svelte", "browser", "module", "main"],
-    conditionNames: ["svelte", "browser", "import", "require", "default"],
   },
 
   devServer: {
@@ -62,10 +66,6 @@ module.exports = {
         },
       },
       {
-        test: /\.(css|s[ac]ss)$/i,
-        use: ["style-loader", "css-loader", "postcss-loader"],
-      },
-      {
         test: /\.css$/,
         use: [
           /**
@@ -86,13 +86,6 @@ module.exports = {
             },
           },
         ],
-      },
-      {
-        test: /\.(ts|tsx|js|jsx)$/,
-        exclude: /node_modules/,
-        use: {
-          loader: "babel-loader",
-        },
       },
     ],
   },

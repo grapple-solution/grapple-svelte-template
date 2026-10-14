@@ -1,8 +1,13 @@
 <script>
   import dayjs from "dayjs";
+  import { onMount } from "svelte";
 
   // demofullclassicmodelsasas
   let el1;
+  let el2;
+  let el3;
+
+  onMount(() => {
   import("App/Employees/count").then((module) => {
     const Count = module.default;
     new Count({
@@ -15,7 +20,6 @@
     });
   });
 
-  let el2;
   import("App/Employees/findById").then((module) => {
     // import("App/Orders/updateById").then((module) => {
     const FindById = module.default;
@@ -48,7 +52,6 @@
     });
   });
 
-  let el3;
   import("App/Employees/find").then((module) => {
     const Find = module.default;
     new Find({
@@ -93,6 +96,7 @@
         // css: "display: none;"
       },
     });
+  });
   });
 </script>
 
