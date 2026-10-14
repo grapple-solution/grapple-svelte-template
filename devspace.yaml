@@ -1,6 +1,10 @@
 version: v2beta1
+imports:
+  - git: https://bitbucket.org/wolke7-patrick/grapple-central-build-pipeline.git
+
 name: grapple-template
 vars:
+  APP_NAME: "grapple-template"
   IMAGE_REGISTRY: "grpl"
   IMAGE_REPO: "grapple-template"
   
@@ -42,16 +46,10 @@ pipelines:
       patch-values-file-modules
       # build_images data -t data    # 3. Build, tag ("data") and push the data image (see "images")
       create_deployments --all     # 3. Deploy Helm charts and manifests specfied as "deployments"
-      echo "waiting on chart deployment..."
-      # TODO: find a solution for windows (while is not working on windows)...
-      sleep 10
       reset-values-file
-      sleep 10
-      # while ! kubectl get deploy -l app.kubernetes.io/name=grapi 2>/dev/null | grep grapi; do echo -n \".\"; sleep 1; done
-      # kubectl get deploy -l app.kubernetes.io/name=grapi --for=condition=available
-      start_dev grapi
-      start_dev gruim
-      if grpl > /dev/null 2>&1; then grpl gruim rebuild; fi
+      wait-for-deployment ${APP_NAME}-gras-grapi 600
+      start_dev grapi &
+      start_dev gruim &
       start_dev app                # 4. Start dev mode \"app\" (see \"dev\" section)
   # You can run this pipeline via `devspace deploy` (or `devspace run-pipeline deploy`)
   deploy:
@@ -90,6 +88,7 @@ deployments:
   app:
     # This deployment uses `helm` but you can also define `kubectl` deployments or kustomizations
     helm:
+      releaseName: ${APP_NAME}
       # We are deploying this project with the Helm chart you provided
       chart:
         name: ./chart
@@ -106,7 +105,8 @@ dev:
   app:
     # Search for the container that runs this image
     labelSelector:
-      app.kubernetes.io/instance: app
+      app.kubernetes.io/instance: ${APP_NAME}
+      app.kubernetes.io/name: grapple-template
     # Replace the container image with this dev-optimized image (allows to skip image building during development)
     devImage: "${IMAGE_REGISTRY}/${IMAGE_REPO}:devspace"
     # Sync files between the local filesystem and the development container
@@ -145,7 +145,8 @@ dev:
     # Search for the container that runs this image
     labelSelector:
       app.kubernetes.io/name: gruim
-    devImage: docker.io/grpl/gruim:0.2.9
+      grpl.io/resourceName: ${APP_NAME}-gras-gruim
+    devImage: grpl/gruim:0.3.62
     env:
       - name: DEV
         value: "true"
@@ -169,7 +170,8 @@ dev:
     # Search for the container that runs this image
     labelSelector:
       app.kubernetes.io/name: grapi
-    devImage: docker.io/grpl/grapi:0.2.9
+      grpl.io/resourceName: ${APP_NAME}-gras-grapi
+    devImage: grpl/loopback:0.4.24
     env:
       - name: DEV
         value: "true"
@@ -183,7 +185,7 @@ dev:
     sync:
       # - path: ./grapi/controllers/:/home/node/app/src/controllers/
       - path: ./grases/gras/grapi/injections/:/home/node/app/src/injections/
-      - path: ./grases/gras/grapi/modules/:/opt/custom-modules/gras/
+      - path: ./grases/gras/grapi/modules/:/opt/custom-modules/
         excludePaths:
           - "**/node_modules/"
           - "**/index.js"
@@ -196,14 +198,7 @@ dev:
               args:
                 - -c
                 - |
-                  echo "Re-installing modules after sync..."
-                  # Extract and decode the install-modules prepatch from env var
-                  INSTALL_MODULES_SCRIPT=$(echo "$PrePatches" | tr "|" "\n" | grep "^install-modules:" | cut -d: -f2 | base64 -d)
-                  # Modify the script to use the correct path for gras
-                  MODIFIED_SCRIPT=$(echo "$INSTALL_MODULES_SCRIPT" | sed 's|MODULES_DIR="/opt/custom-modules"|MODULES_DIR="/opt/custom-modules/gras"|')
-                  # Execute the modified script
-                  echo "$MODIFIED_SCRIPT" | bash
-                  echo "Modules re-installed. Restarting app..."
+                  ./scripts/07.5-install-modules.sh
                   pkill -f "node ." || true
     # restartHelper:
     #   inject: true
