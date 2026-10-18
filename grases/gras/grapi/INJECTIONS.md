@@ -6,7 +6,7 @@ those generated entries manually.
 
 | Type | Folder | File type | Applied when |
 | --- | --- | --- | --- |
-| Controllers | `controllers/` or `injections/` | `*.controller.ts` | Backend startup |
+| Controllers | `controllers/` | `*.controller.ts` | Backend startup |
 | Service providers | `serviceproviders/` | `*.service.ts` | Backend startup |
 | Services | `services/` | `*.service.ts` | Backend startup |
 | Cache configuration | `cacheconfigs/` | `*.ts` | Backend generation |
@@ -22,6 +22,10 @@ those generated entries manually.
 | Pre-discovery patches | `prediscoverypatches/` | `*.sh` | After datasource creation, before discovery |
 | Pre-relation patches | `prerelationpatches/` | `*.sh` | Before relation creation |
 | Post-patches | `postpatches/` | `*.sh` | After backend creation |
+
+`injections/` is a legacy development sync folder. The Taskfile maps its controller files to
+`controllers` for generated values; it is not a separate grapi CRD injection type. Use
+`controllers/` for new files.
 
 ## Tested example
 
