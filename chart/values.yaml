@@ -25,8 +25,8 @@ grases:
     gras: {}
     grapi:
       runimages:
-        image: grpl/grapi
-        tag: "0.2.9"
+        image: grpl/loopback
+        tag: "0.4.24"
       discoveredrepos: true
       ingress: true
       ssl: true
@@ -153,13 +153,12 @@ grases:
             datasource: "classicmodelsid"
       controllers: []
       postpatches: []
-      injections: []
       prerelationpatches: []
       prepatches: []
     gruim:
       runimages:
-        tag: 0.2.9
-        name: grpl/gruim
+        tag: 0.3.62
+        image: grpl/gruim
       ssl: true
       sslissuer: letsencrypt-grapple-demo
       style: '{"colors":{"primary":{"DEFAULT":"#34344A","fg":"#fff"},"accent":{"DEFAULT":"#CC5A71","fg":"#fff"}}}'
