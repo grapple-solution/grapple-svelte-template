@@ -13,6 +13,9 @@ You can explore and extend the available structures using:
 k explain grapi.spec --recursive
 ```
 
+For the supported file-based grapi injection types and their verification command,
+see [grases/gras/grapi/INJECTIONS.md](grases/gras/grapi/INJECTIONS.md).
+
 Once the development environment is started with `grpl dev` and the pods are successfully created, three main portals will become available:
 
 - **OpenAPI and Swagger UI** ([http://localhost:3000](http://localhost:3000))
