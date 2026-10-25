@@ -1,40 +1,26 @@
-# Stage 1: Build Stage
-FROM node:latest AS build
+# The frontend is rebuilt at container startup after the gruim remote is available.
+FROM node:22-alpine
+
+# The startup script uses curl and jq to read dashboard.json; nginx serves the bundle.
+RUN apk add --no-cache curl jq nginx
+RUN mkdir -p /usr/share/nginx/html
+# Keep the package manager identical to the packageManager field in package.json.
+RUN npm install -g pnpm@9.15.9
 
 WORKDIR /app
 
-# Copy package.json and package-lock.json
-COPY package*.json ./
-
-# Install dependencies
-RUN npm install -g pnpm@9 && pnpm i
-# Copy source code
-COPY . .
-
-# Build the application
-RUN npm run build
-
-# Stage 2: Production Stage
-#FROM nginx:latest
-FROM nginx:1.19.9-alpine
-
-# Other configurations, if needed
-RUN apk add --update nodejs nodejs-npm jq
-RUN npm i -g pnpm@6.32.3
-
-WORKDIR /app
-
-# Copy built files from the build stage to the production image
-# COPY --from=build /app/dist /usr/share/nginx/html
+# Keep JSON-based frontend configuration available to the runtime build.
 COPY *.js ./
 COPY *.json ./
+COPY pnpm-lock.yaml ./
 COPY src /app/src
 
-RUN pnpm i
+# Use the lockfile so development and container dependencies stay identical.
+RUN pnpm install --frozen-lockfile
 
-COPY --chown=nginx nginx.conf.template /etc/nginx/conf.d/default.conf
+# Alpine nginx loads server blocks from http.d.
+COPY --chown=nginx nginx.conf.template /etc/nginx/http.d/default.conf
 COPY rebuild.sh rebuild.sh
 
-# Container startup command for the web server (nginx in this case)
-# CMD ["nginx", "-g", "daemon off;"]
-CMD './rebuild.sh'
+# rebuild.sh waits for gruim, builds the frontend and starts nginx (or pnpm dev in DEV mode).
+CMD ["./rebuild.sh"]
